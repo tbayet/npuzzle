@@ -12,6 +12,14 @@ typedef struct		s_dim
 	char			j;
 }					t_dim;
 
+typedef struct		s_choice
+{
+	char			up;
+	char			right;
+	char			left;
+	char			down;
+}					t_choice;
+
 typedef struct		s_pathes
 {
 	char			up;
@@ -37,7 +45,10 @@ typedef struct		s_grid
 }					t_grid;
 
 t_puzzle			*npuzzle(t_puzzle *puzzle);
+void				goforit(t_puzzle *puzzle, t_pathes **pathes);
 t_puzzle			*get_puzzle(char *file);
 t_puzzle			*check_puzzle(t_puzzle *npuz, char **puzzle);
+
+void	printpuzzle(char **puzzle);
 
 #endif

@@ -5,14 +5,19 @@ void	printpuzzle(char **puzzle)
 {
 	int	i;
 	int	j;
+	int	blank;
 
 	i = 0;
+	blank = ft_strlen(*puzzle) * ft_strlen(*puzzle);
 	while (puzzle[i])
 	{
 		j = 0;
 		while (puzzle[i][j])
 		{
-			ft_putnbr(puzzle[i][j]);
+			if (puzzle[i][j] == blank)
+				ft_putchar('*');
+			else
+				ft_putnbr(puzzle[i][j]);
 			ft_putchar(' ');
 			j++;
 		}
@@ -32,8 +37,10 @@ int	main(int argc, char **argv)
 			printpuzzle(puzzle->now);
 			ft_putstr("\n");
 			printpuzzle(puzzle->end);
-			ft_putstr("\n");
+			ft_putstr("\n------------\n");
 			npuzzle(puzzle);
+			ft_putstr("\n------------\n");
+			printpuzzle(puzzle->now);
 		}
 	}
 	else

@@ -72,7 +72,7 @@ static	t_puzzle *transform_puzzle(t_puzzle *npuz, char **puzzle)
 		{
 			while (puzzle[i][j] == ' ' || puzzle[i][j] == '	')
 				j++;
-			if (!(npuz->now[i][k] = ft_atoi(puzzle[i] + j)))
+			if ((npuz->now[i][k] = ft_atoi(puzzle[i] + j)) == 0)
 				npuz->now[i][k] = npuz->len * npuz->len;
 			k++;
 			while (puzzle[i][j] && puzzle[i][j] != ' ' && puzzle[i][j] != '	')
@@ -93,18 +93,53 @@ static	t_puzzle *transform_puzzle(t_puzzle *npuz, char **puzzle)
 	return (npuz);
 }
 
-t_puzzle	*fill_solv(t_puzzle *puzzle, int i, int j, int index)
+t_puzzle	*fill_solv(t_puzzle *puzzle, t_dim dim, char dir, int index)
 {
-	puzzle->solv[index] = puzzle->end[i][j];
-	puzzle->end[i][j] = '\0';
-	if (puzzle->end[i][j + 1])
-		puzzle = fill_solv(puzzle, i, j + 1, index + 1);
-	else if (i + 1 < puzzle->len && puzzle->end[i + 1][j])
-		puzzle = fill_solv(puzzle, i + 1, j, index + 1);
-	else if (j - 1 >= 0 && puzzle->end[i][j - 1])
-		puzzle = fill_solv(puzzle, i, j - 1, index + 1);
-	else if (i - 1 >= 0 && puzzle->end[i - 1][j])
-		puzzle = fill_solv(puzzle, i - 1, j, index + 1);
+	puzzle->solv[index] = puzzle->end[dim.i][dim.j];
+	if (dir == 0)
+	{
+		if (puzzle->end[dim.i][dim.j + 1])
+		{
+			(dim.j)++;
+			puzzle->end[dim.i][dim.j] = '\0';
+			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+		}
+		else
+			dir++;
+	}
+	if (dir == 1)
+	{
+		if (dim.i + 1 < puzzle->len && puzzle->end[dim.i + 1][dim.j])
+		{
+			(dim.i)++;
+			puzzle->end[dim.i][dim.j] = '\0';
+			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+		}
+		else
+			dir++;
+	}
+	if (dir == 2)
+	{
+		if (dim.j - 1 >= 0 && puzzle->end[dim.i][dim.j - 1])
+		{
+			(dim.j)--;
+			puzzle->end[dim.i][dim.j] = '\0';
+			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+		}
+		else
+			dir++;
+	}
+	if (dir == 3)
+	{
+		if (dim.i - 1 >= 0 && puzzle->end[dim.i - 1][dim.j])
+		{
+			(dim.i)--;
+			puzzle->end[dim.i][dim.j] = '\0';
+			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+		}
+		else
+			puzzle = fill_solv(puzzle, dim, 0, index);
+	}
 	return (puzzle);
 }
 
@@ -113,8 +148,11 @@ int	is_solvable(t_puzzle *puzzle)
 	int	nb_invert;
 	int	i;
 	int	j;
+	t_dim	dim;
 
-	puzzle = fill_solv(puzzle, 0, 0, 0);
+	dim.i = 0;
+	dim.j = 0;
+	puzzle = fill_solv(puzzle, dim, 0, 0);
 	i = 0;
 	nb_invert = 0;
 	while (puzzle->solv[i])
@@ -155,22 +193,56 @@ int	is_solvable(t_puzzle *puzzle)
 	return (0);
 }
 
-static t_puzzle	*get_solved(t_puzzle *puzzle, int i, int j, int value)
+static t_puzzle	*get_solved(t_puzzle *puzzle, t_dim dim, char dir, int value)
 {
-	(puzzle->end)[i][j] = value;
-	if (j + 1 < puzzle->len && puzzle->end[i][j + 1] == '\0')
-		puzzle = get_solved(puzzle, i, j + 1, value + 1);
-	else if (i + 1 < puzzle->len && puzzle->end[i + 1][j] == '\0')
-		puzzle = get_solved(puzzle, i + 1, j, value + 1);
-	else if (j - 1 >= 0 && puzzle->end[i][j - 1] == '\0')
-		puzzle = get_solved(puzzle, i, j - 1, value + 1);
-	else if (i - 1 >= 0 && puzzle->end[i - 1][j] == '\0')
-		puzzle = get_solved(puzzle, i - 1, j, value + 1);
+	(puzzle->end)[dim.i][dim.j] = value;
+
+	if (dir == 0)
+	{
+		if (dim.j + 1 < puzzle->len && puzzle->end[dim.i][dim.j + 1] == '\0')
+		{
+			(dim.j)++;
+			puzzle = get_solved(puzzle, dim, dir, value + 1);
+		}
+		else
+			dir++;
+	}
+	if (dir == 1)
+	{
+		if (dim.i + 1 < puzzle->len && puzzle->end[dim.i + 1][dim.j] == '\0')
+		{
+			(dim.i)++;
+			puzzle = get_solved(puzzle, dim, dir, value + 1);
+		}
+		else
+			dir++;
+	}
+	if (dir == 2)
+	{
+		if (dim.j - 1 >= 0 && puzzle->end[dim.i][dim.j - 1] == '\0')
+		{
+			(dim.j)--;
+			puzzle = get_solved(puzzle, dim, dir, value + 1);
+		}
+		else
+			dir++;
+	}
+	if (dir == 3)
+	{
+		if (dim.i - 1 >= 0 && puzzle->end[dim.i - 1][dim.j] == '\0')
+		{
+			(dim.i)--;
+			puzzle = get_solved(puzzle, dim, dir, value + 1);
+		}
+		else
+			puzzle = get_solved(puzzle, dim, 0, value);
+	}
 	return (puzzle);
 }
 
 t_puzzle	*check_puzzle(t_puzzle *npuz, char **puzzle)
 {
+	t_dim	dim;
 	if (!(check_parsing(puzzle)))
 	{
 		ft_putendl_fd("npuzzle: Error in file format", 2);
@@ -186,8 +258,10 @@ t_puzzle	*check_puzzle(t_puzzle *npuz, char **puzzle)
 	if (!(is_solvable(npuz)))
 	{
 		ft_putendl_fd("npuzzle: Impossible to solve this puzzle", 2);
-		return (NULL);
+	//	return (NULL);
 	}
-	get_solved(npuz, 0, 0, 1);
+	dim.i = 0;
+	dim.j = 0;
+	npuz = get_solved(npuz, dim, 0, 1);
 	return (npuz);
 }

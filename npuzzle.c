@@ -6,7 +6,7 @@
 /*   By: tbayet <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/17 15:44:25 by tbayet            #+#    #+#             */
-/*   Updated: 2016/11/17 18:10:19 by tbayet           ###   ########.fr       */
+/*   Updated: 2016/11/18 17:34:51 by tbayet           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "npuzzle.h"
@@ -82,6 +82,7 @@ t_puzzle	*npuzzle(t_puzzle *puzzle)
 		i++;
 	}
 	pathes[i] = NULL;
+	printpathes(pathes);
 	goforit(puzzle, pathes);
 	return (puzzle);
 }
