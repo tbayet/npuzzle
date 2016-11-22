@@ -48,7 +48,7 @@ t_puzzle			*npuzzle(t_puzzle *puzzle);
 void				goforit(t_puzzle *puzzle, t_pathes **pathes);
 t_puzzle			*get_puzzle(char *file);
 t_puzzle			*check_puzzle(t_puzzle *npuz, char **puzzle);
-
+void	printpathes(t_pathes **tab);
 void	printpuzzle(char **puzzle);
 
 #endif

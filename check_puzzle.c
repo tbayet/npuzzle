@@ -93,52 +93,45 @@ static	t_puzzle *transform_puzzle(t_puzzle *npuz, char **puzzle)
 	return (npuz);
 }
 
-t_puzzle	*fill_solv(t_puzzle *puzzle, t_dim dim, char dir, int index)
+t_puzzle	*fill_solv(t_puzzle *puzzle)
 {
-	puzzle->solv[index] = puzzle->end[dim.i][dim.j];
-	if (dir == 0)
+	int		index;
+	char	i;
+	char	j;
+
+	index = 0;
+	i = 0;
+	j = 0;
+	while (index < (puzzle->len * puzzle->len))
 	{
-		if (puzzle->end[dim.i][dim.j + 1])
+		while (puzzle->end[i][j])
 		{
-			(dim.j)++;
-			puzzle->end[dim.i][dim.j] = '\0';
-			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+			puzzle->solv[index++] = puzzle->end[i][j];
+			puzzle->end[i][j++] = '\0';
 		}
-		else
-			dir++;
-	}
-	if (dir == 1)
-	{
-		if (dim.i + 1 < puzzle->len && puzzle->end[dim.i + 1][dim.j])
+		j--;
+		i++;
+		while (i < puzzle->len && puzzle->end[i][j])
 		{
-			(dim.i)++;
-			puzzle->end[dim.i][dim.j] = '\0';
-			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+			puzzle->solv[index++] = puzzle->end[i][j];
+			puzzle->end[i++][j] = '\0';
 		}
-		else
-			dir++;
-	}
-	if (dir == 2)
-	{
-		if (dim.j - 1 >= 0 && puzzle->end[dim.i][dim.j - 1])
+		i--;
+		j--;
+		while (j >= 0 && puzzle->end[i][j])
 		{
-			(dim.j)--;
-			puzzle->end[dim.i][dim.j] = '\0';
-			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+			puzzle->solv[index++] = puzzle->end[i][j];
+			puzzle->end[i][j--] = '\0';
 		}
-		else
-			dir++;
-	}
-	if (dir == 3)
-	{
-		if (dim.i - 1 >= 0 && puzzle->end[dim.i - 1][dim.j])
+		j++;
+		i--;
+		while (i >= 0 && puzzle->end[i][j])
 		{
-			(dim.i)--;
-			puzzle->end[dim.i][dim.j] = '\0';
-			puzzle = fill_solv(puzzle, dim, dir, index + 1);
+			puzzle->solv[index++] = puzzle->end[i][j];
+			puzzle->end[i--][j] = '\0';
 		}
-		else
-			puzzle = fill_solv(puzzle, dim, 0, index);
+		i++;
+		j++;
 	}
 	return (puzzle);
 }
@@ -148,11 +141,8 @@ int	is_solvable(t_puzzle *puzzle)
 	int	nb_invert;
 	int	i;
 	int	j;
-	t_dim	dim;
 
-	dim.i = 0;
-	dim.j = 0;
-	puzzle = fill_solv(puzzle, dim, 0, 0);
+	puzzle = fill_solv(puzzle);
 	i = 0;
 	nb_invert = 0;
 	while (puzzle->solv[i])
@@ -193,56 +183,45 @@ int	is_solvable(t_puzzle *puzzle)
 	return (0);
 }
 
-static t_puzzle	*get_solved(t_puzzle *puzzle, t_dim dim, char dir, int value)
+static t_puzzle	*get_solved(t_puzzle *puzzle)
 {
-	(puzzle->end)[dim.i][dim.j] = value;
+	int	i;
+	int	j;
+	int	value;
 
-	if (dir == 0)
+	i = 0;
+	j = 0;
+	value = 1;
+	while (value <= puzzle->len * puzzle->len)
 	{
-		if (dim.j + 1 < puzzle->len && puzzle->end[dim.i][dim.j + 1] == '\0')
+		while (j < puzzle->len && !(puzzle->end[i][j]))
+			puzzle->end[i][j++] = value++;
+		j--;
+		i++;
+		while (i < puzzle->len && !(puzzle->end[i][j]))
 		{
-			(dim.j)++;
-			puzzle = get_solved(puzzle, dim, dir, value + 1);
+			puzzle->end[i++][j] = value++;
 		}
-		else
-			dir++;
-	}
-	if (dir == 1)
-	{
-		if (dim.i + 1 < puzzle->len && puzzle->end[dim.i + 1][dim.j] == '\0')
+		i--;
+		j--;
+		while (j >= 0 && (!puzzle->end[i][j]))
 		{
-			(dim.i)++;
-			puzzle = get_solved(puzzle, dim, dir, value + 1);
+			puzzle->end[i][j--] = value++;
 		}
-		else
-			dir++;
-	}
-	if (dir == 2)
-	{
-		if (dim.j - 1 >= 0 && puzzle->end[dim.i][dim.j - 1] == '\0')
+		j++;
+		i--;
+		while (i >= 0 && !(puzzle->end[i][j]))
 		{
-			(dim.j)--;
-			puzzle = get_solved(puzzle, dim, dir, value + 1);
+			puzzle->end[i--][j] = value++;
 		}
-		else
-			dir++;
-	}
-	if (dir == 3)
-	{
-		if (dim.i - 1 >= 0 && puzzle->end[dim.i - 1][dim.j] == '\0')
-		{
-			(dim.i)--;
-			puzzle = get_solved(puzzle, dim, dir, value + 1);
-		}
-		else
-			puzzle = get_solved(puzzle, dim, 0, value);
+		i++;
+		j++;
 	}
 	return (puzzle);
 }
 
 t_puzzle	*check_puzzle(t_puzzle *npuz, char **puzzle)
 {
-	t_dim	dim;
 	if (!(check_parsing(puzzle)))
 	{
 		ft_putendl_fd("npuzzle: Error in file format", 2);
@@ -258,10 +237,8 @@ t_puzzle	*check_puzzle(t_puzzle *npuz, char **puzzle)
 	if (!(is_solvable(npuz)))
 	{
 		ft_putendl_fd("npuzzle: Impossible to solve this puzzle", 2);
-	//	return (NULL);
+		return (NULL);
 	}
-	dim.i = 0;
-	dim.j = 0;
-	npuz = get_solved(npuz, dim, 0, 1);
+	npuz = get_solved(npuz);
 	return (npuz);
 }

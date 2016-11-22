@@ -6,11 +6,12 @@
 /*   By: tbayet <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/17 18:10:31 by tbayet            #+#    #+#             */
-/*   Updated: 2016/11/18 17:29:49 by tbayet           ###   ########.fr       */
+/*   Updated: 2016/11/22 17:45:35 by tbayet           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "npuzzle.h"
+#include "limits.h"
 
 static t_dim	*find_blank(char **puzzle, char c)
 {
@@ -32,6 +33,56 @@ static t_dim	*find_blank(char **puzzle, char c)
 	}
 	free(blank);
 	return (NULL);
+}
+
+static t_choice	find_min(t_choice choices, t_pathes **pathes, t_puzzle *puzzle, int max)
+{
+	int min;
+
+	min = INT_MAX;
+
+	if (choices.up == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i - 1][puzzle->blank->j] - 1]->total < min)
+			min = pathes[puzzle->now[puzzle->blank->i - 1][puzzle->blank->j] - 1]->total;
+	}
+	if (choices.down == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i + 1][puzzle->blank->j] - 1]->total < min)
+			min = pathes[puzzle->now[puzzle->blank->i + 1][puzzle->blank->j] - 1]->total;
+	}
+	if (choices.left == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i][puzzle->blank->j - 1] - 1]->total < min)
+			min = pathes[puzzle->now[puzzle->blank->i][puzzle->blank->j - 1] - 1]->total;
+	}
+	if (choices.right == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i][puzzle->blank->j + 1] - 1]->total < min)
+			min = pathes[puzzle->now[puzzle->blank->i][puzzle->blank->j + 1] - 1]->total;
+	}
+
+	if (choices.up == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i - 1][puzzle->blank->j] - 1]->total == min)
+			choices.up += 1;
+	}
+	if (choices.down == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i + 1][puzzle->blank->j] - 1]->total == min)
+			choices.down += 1;
+	}
+	if (choices.left == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i][puzzle->blank->j - 1] - 1]->total == min)
+			choices.left += 1;
+	}
+	if (choices.right == max)
+	{
+		if (pathes[puzzle->now[puzzle->blank->i][puzzle->blank->j + 1] - 1]->total == min)
+			choices.right += 1;
+	}
+	return (choices);
 }
 
 static int	find_max(t_choice choices, char *eg)
@@ -65,15 +116,19 @@ static t_dim	find_best_path(t_pathes **pathes, t_choice choices, t_dim moved, t_
 	blank = puzzle->len * puzzle->len - 1;
 	if (eg > 1)
 	{
-		choices.up += (choices.up == max && pathes[blank]->up) ? pathes[blank]->total : 0;
-		choices.down += (choices.down == max && pathes[blank]->down) ? pathes[blank]->total : 0;
-		choices.left += (choices.left == max && pathes[blank]->left) ? pathes[blank]->total : 0;
-		choices.right += (choices.right == max && pathes[blank]->right) ? pathes[blank]->total : 0;
+		choices = find_min(choices, pathes, puzzle, max);
 		max = find_max(choices, &eg);
+		if (eg > 1)
+		{
+			choices.up += (choices.up == max && pathes[blank]->up) ? pathes[blank]->total : 0;
+			choices.down += (choices.down == max && pathes[blank]->down) ? pathes[blank]->total : 0;
+			choices.left += (choices.left == max && pathes[blank]->left) ? pathes[blank]->total : 0;
+			choices.right += (choices.right == max && pathes[blank]->right) ? pathes[blank]->total : 0;
+			max = find_max(choices, &eg);
+		}
 	}
 	printf("EGALITE: %d | U[%d] D[%d] L[%d] R[%d]\n", eg, choices.up, choices.down, choices.left, choices.right);
 	printf("BLANK *     | U[%d] D[%d] L[%d] R[%d]\n", pathes[blank]->up, pathes[blank]->down, pathes[blank]->left, pathes[blank]->right);
-	sleep(1);
 	moved.i = puzzle->blank->i;
 	moved.j = puzzle->blank->j;
 	if (choices.up == max)
