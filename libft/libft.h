@@ -26,7 +26,7 @@ typedef struct			s_list
 
 typedef struct s_list	t_save;
 
-void					ft_deltab(char **tab);
+char					**ft_deltab(char **tab);
 char					**ft_tabdup(char **tab);
 int						ft_tablen(char **tab);
 char					**ft_revtab(char **tab);
@@ -115,5 +115,7 @@ int						ft_voidstr(char *str);
 void					ft_putcolor_fd(char *str, char *color, int fd);
 char					*ft_strndup(const char *s1, size_t n);
 int					ft_nbwords(char *str);
+char					**ft_tabzero(char **tab, int leni, int lenj);
+char					**ft_tabnew(int leni, int lenj);
 
 #endif

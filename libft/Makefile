@@ -98,7 +98,9 @@ SRCS =	ft_memset.c		\
 		ft_putcolor_fd.c\
 		ft_strndup.c	\
 		ft_strsplitone.c \
-		ft_nbwords.c
+		ft_nbwords.c	\
+		ft_tabzero.c	\
+		ft_tabnew.c
 
 OBJS =	$(SRCS:.c=.o)
 

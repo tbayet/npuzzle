@@ -12,7 +12,7 @@ typedef struct		s_dim
 	char			j;
 }					t_dim;
 
-typedef struct		s_choice
+/*typedef struct		s_choice
 {
 	char			up;
 	char			right;
@@ -27,7 +27,13 @@ typedef struct		s_pathes
 	char			left;
 	char			down;
 	int				total;
-}					t_pathes;
+}					t_pathes; */
+
+typedef struct		s_moves
+{
+	char		dir;
+	struct s_moves	*next;
+}			t_moves;
 
 typedef struct		s_puzzle
 {
@@ -36,6 +42,7 @@ typedef struct		s_puzzle
 	int				len;
 	char			*solv;
 	t_dim			*blank;
+	t_moves			*moves;
 }					t_puzzle;
 
 typedef struct		s_grid
@@ -45,10 +52,11 @@ typedef struct		s_grid
 }					t_grid;
 
 t_puzzle			*npuzzle(t_puzzle *puzzle);
-void				goforit(t_puzzle *puzzle, t_pathes **pathes);
 t_puzzle			*get_puzzle(char *file);
 t_puzzle			*check_puzzle(t_puzzle *npuz, char **puzzle);
-void	printpathes(t_pathes **tab);
-void	printpuzzle(char **puzzle);
+char			ended(t_puzzle *puzzle);
+//void			printpathes(t_pathes **tab);
+void			printpuzzle(char **puzzle);
+t_dim				*ft_newdim(char i, char j);
 
 #endif

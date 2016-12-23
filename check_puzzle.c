@@ -73,7 +73,11 @@ static	t_puzzle *transform_puzzle(t_puzzle *npuz, char **puzzle)
 			while (puzzle[i][j] == ' ' || puzzle[i][j] == '	')
 				j++;
 			if ((npuz->now[i][k] = ft_atoi(puzzle[i] + j)) == 0)
+			{
 				npuz->now[i][k] = npuz->len * npuz->len;
+				if (!(npuz->blank = ft_newdim(i, k)))
+					return (NULL);
+			}
 			k++;
 			while (puzzle[i][j] && puzzle[i][j] != ' ' && puzzle[i][j] != '	')
 				j++;
@@ -240,5 +244,6 @@ t_puzzle	*check_puzzle(t_puzzle *npuz, char **puzzle)
 		return (NULL);
 	}
 	npuz = get_solved(npuz);
+	npuz->moves = NULL;
 	return (npuz);
 }

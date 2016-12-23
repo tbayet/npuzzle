@@ -1,88 +1,89 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   npuzzle.c                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: tbayet <marvin@42.fr>                      +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/11/17 15:44:25 by tbayet            #+#    #+#             */
-/*   Updated: 2016/11/18 17:34:51 by tbayet           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 #include "npuzzle.h"
 
-static t_dim	getdim(char **tab, char c)
+t_moves		*addmove(t_moves **moves, char dir)
 {
-	t_dim	dim;
+	t_moves	*new;
 
-	dim.i = 0;
-	dim.j = 0;
-	while (tab[dim.i])
-	{
-		dim.j = 0;
-		while (tab[dim.i][dim.j])
-		{
-			if (tab[dim.i][dim.j] == c)
-				return (dim);
-			dim.j++;
-		}
-		dim.i++;
-	}
-	return (dim);
-}
-
-t_pathes	*newpath(t_puzzle *puzzle, char c)
-{
-	t_pathes	*path;
-	t_dim		dimA;
-	t_dim		dimZ;
-
-	if (!(path = (t_pathes*)malloc(sizeof(t_pathes))))
+	if (!(new = (t_moves*)malloc(sizeof(t_moves))))
 		return (NULL);
-	dimA = getdim(puzzle->now, c);
-	dimZ = getdim(puzzle->end, c);
-	path->up = (dimA.i - dimZ.i > 0) ? dimA.i - dimZ.i : 0;
-	path->down = (dimZ.i - dimA.i > 0) ? dimZ.i - dimA.i : 0;
-	path->left = (dimA.j - dimZ.j > 0) ? dimA.j - dimZ.j : 0;
-	path->right = (dimZ.j - dimA.j > 0) ? dimZ.j - dimA.j : 0;
-	path->total = path->up + path->down + path->left + path->right;
-	return (path);
+	new->dir = dir;
+	new->next = NULL;
+	if (!(moves))
+		moves = &new;
+	else
+		(*moves)->next = new;
+	return (new);
 }
 
-void	printpathes(t_pathes **tab)
+static void	see_valid_moves(t_puzzle *puzzle, char moves[4], t_moves *lastmove)
+{
+	int	i;
+	int	j;
+	int	index;
+
+	index = 0;
+	i = puzzle->blank->i;
+	j = puzzle->blank->j;
+	if ((!lastmove || lastmove->dir != 'D') && (i - 1 >= 0) && puzzle->now[i - 1][j])
+		moves[index++] = 'U';
+	if ((!lastmove || lastmove->dir != 'U') && (i + 1 < puzzle->len) && puzzle->now[i + 1][j])
+		moves[index++] = 'D';
+	if ((!lastmove || lastmove->dir != 'R') && (j - 1 >= 0) && puzzle->now[i][j - 1])
+		moves[index++] = 'L';
+	if ((!lastmove || lastmove->dir != 'L') && puzzle->now[i][j + 1])
+		moves[index++] = 'R';
+	while (index < 4)
+		moves[index++] = '\0';
+}
+
+static char	**init_tabs(char **tabs[4], int len, char c)
 {
 	int	i;
 
 	i = 0;
-	while (tab[i])
+	while (i < 4)
 	{
-		printf("[%d]-----\n", i + 1);
-		printf("-UP    : %d\n", tab[i]->up); 
-		printf("-DOWN  : %d\n", tab[i]->down); 
-		printf("-LEFT  : %d\n", tab[i]->left); 
-		printf("-RIGHT : %d\n", tab[i]->right);
-		i++;
+		if (c)
+		{
+			if (!(tabs[i++] = ft_tabnew(len, len)))
+				return (NULL);
+		}
+		else
+			ft_tabzero(tabs[i++], len, len);
 	}
+	return (tabs[0]);
 }
 
-t_puzzle	*npuzzle(t_puzzle *puzzle)
+/** void	applythread(t_puzzle *puzzle, char **res, char dir)
 {
-	t_pathes	**pathes;
-	int			len;
-	int			i;
+	pid_t	*pid;
 
-	len = puzzle->len * puzzle->len;
-	if (!(pathes = (t_pathes**)malloc(sizeof(t_pathes*) * (len + 1))))
+	pid = fork();
+	
+} **/
+
+t_puzzle	*npuzzle(t_puzzle *puzzle)
+{	
+	char	**tabs[4];
+	char	moves[4];
+	int		i;
+	t_moves	*lastmove;
+
+	if (!(init_tabs(tabs, puzzle->len, 1)))
 		return (NULL);
-	i = 0;
-	while (i < len)
+	lastmove = puzzle->moves;
+	while (!ended(puzzle))
 	{
-		if (!(pathes[i] = newpath(puzzle, i + 1)))
-			return (NULL); // DELPATHES
-		i++;
+		see_valid_moves(puzzle, moves, lastmove);
+		i = 0;
+		while (moves[i])
+		{
+		//	applythread(puzzle, tabs[i], moves[i]);
+			i++;
+		}
+		init_tabs(tabs, puzzle->len, 0);
+		break;
 	}
-	pathes[i] = NULL;
-	printpathes(pathes);
-	goforit(puzzle, pathes);
+	exit(0);
 	return (puzzle);
 }

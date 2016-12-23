@@ -17,9 +17,14 @@ char	**ft_tabdup(char **tab)
 {
 	char	**res;
 	int		i;
+	int		len;
 
-	if (!(res = (char**)malloc(sizeof(char*) * (ft_tablen(tab) + 1))))
+	len = ft_tablen(tab);
+	if (!(res = (char**)malloc(sizeof(char*) * (len + 1))))
 		return (NULL);
+	i = 0;
+	while (i <= len)
+		res[i++] = NULL;
 	i = 0;
 	while (tab[i])
 	{
@@ -30,6 +35,5 @@ char	**ft_tabdup(char **tab)
 		}
 		i++;
 	}
-	res[i] = NULL;
 	return (res);
 }

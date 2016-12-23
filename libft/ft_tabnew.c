@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_deltab.c                                        :+:      :+:    :+:   */
+/*   ft_tabnew.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tbayet <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -13,20 +13,21 @@
 #include <stdlib.h>
 #include "libft.h"
 
-char	**ft_deltab(char **tab)
+char	**ft_tabnew(int leni, int lenj)
 {
 	int	i;
+	char	**tab;
 
-	if (tab)
+	if (!(tab = (char**)malloc(sizeof(char*) * (leni + 1))))
+		return (NULL);
+	i = 0;
+	while (i < leni)
+		tab[i++] = NULL;
+	i = 0;
+	while (i < leni)
 	{
-		i = 0;
-		while (tab[i])
-		{
-			free(tab[i]);
-			tab[i++] = NULL;
-		}
-		free(tab);
-		tab = NULL;
+		if (!(tab[i++] = ft_strnew(lenj)))
+			return (ft_deltab(tab));
 	}
-	return (NULL);
+	return (tab);
 }

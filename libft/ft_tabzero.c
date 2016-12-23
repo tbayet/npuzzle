@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_deltab.c                                        :+:      :+:    :+:   */
+/*   ft_tabzero.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tbayet <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -13,20 +13,12 @@
 #include <stdlib.h>
 #include "libft.h"
 
-char	**ft_deltab(char **tab)
+char	**ft_tabzero(char **tab, int leni, int lenj)
 {
 	int	i;
 
-	if (tab)
-	{
-		i = 0;
-		while (tab[i])
-		{
-			free(tab[i]);
-			tab[i++] = NULL;
-		}
-		free(tab);
-		tab = NULL;
-	}
-	return (NULL);
+	i = 0;
+	while (i < leni)
+		ft_bzero(tab[i++], lenj);
+	return (tab);
 }
