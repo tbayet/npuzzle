@@ -100,7 +100,8 @@ SRCS =	ft_memset.c		\
 		ft_strsplitone.c \
 		ft_nbwords.c	\
 		ft_tabzero.c	\
-		ft_tabnew.c
+		ft_tabnew.c	\
+		ft_absolute.c
 
 OBJS =	$(SRCS:.c=.o)
 

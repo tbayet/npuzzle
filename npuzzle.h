@@ -5,6 +5,8 @@
 # include <stdlib.h>
 # include <fcntl.h>
 # include <unistd.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 
 typedef struct		s_dim
 {
@@ -58,5 +60,6 @@ char			ended(t_puzzle *puzzle);
 //void			printpathes(t_pathes **tab);
 void			printpuzzle(char **puzzle);
 t_dim				*ft_newdim(char i, char j);
+t_dim				getdims(char **tab, char c);
 
 #endif

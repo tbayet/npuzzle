@@ -117,5 +117,6 @@ char					*ft_strndup(const char *s1, size_t n);
 int					ft_nbwords(char *str);
 char					**ft_tabzero(char **tab, int leni, int lenj);
 char					**ft_tabnew(int leni, int lenj);
+int					ft_absolute(int nb);
 
 #endif
