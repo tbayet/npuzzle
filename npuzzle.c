@@ -105,6 +105,9 @@ int	algo_nilson(t_puzzle *puzzle, char *solv, char **table)
 	int	len;
 	int	i;
 
+	printf("5---debug---\n");
+	printpuzzle(table);
+	printf("5---debug---\n");
 	len = puzzle->len * puzzle->len;
 	res = (solv[len - 1] != len) ? 1 : 0;
 	i = 0;
@@ -131,24 +134,29 @@ void	calcul_value(t_puzzle *puzzle, char **table, int *value)
 	char	*solv;
 
 	len = puzzle->len;
-	solv = ft_strnew(len); // protect
-	cpt = len;
+	solv = ft_strnew(len * len); // protect
 	pos.i = 0;
-	pos.j = 0;
-	while (len)
+	pos.j = -1;
+	while (len > 0)
 	{
-		while (cpt--)
-			solv[i++] = table[pos.i][pos.j++];
+		cpt = len;
+		while (cpt-- > 0 && printf("0[%d][%d]\n", pos.i, pos.j))
+			solv[i++] = table[pos.i][++pos.j];
 		cpt = --len;
-		while (cpt--)
-			solv[i++] = table[pos.i++][pos.j];
-		while (cpt--)
-			solv[i++] = table[pos.i][pos.j--];
+		while (cpt-- > 0 && printf("1[%d][%d]\n", pos.i, pos.j))
+			solv[i++] = table[++pos.i][pos.j];
+		cpt = len;
+		while (cpt-- > 0 && printf("2[%d][%d]\n", pos.i, pos.j))
+			solv[i++] = table[pos.i][--pos.j];
 		cpt = --len;
-		while (cpt--)
-			solv[i++] = table[pos.i--][pos.j];
+		while (cpt-- > 0 && printf("3[%d][%d]\n", pos.i, pos.j))
+			solv[i++] = table[--pos.i][pos.j];
 	}
+	printf("Go in algo...\n");
 	*value = algo_nilson(puzzle, solv, table);
+	printf("---debug---\n");
+	printpuzzle(table);
+	printf("---debug---\n");
 }
 
 int	applythread(t_puzzle *puzzle, char **res, int *value, char dir)
@@ -157,24 +165,43 @@ int	applythread(t_puzzle *puzzle, char **res, int *value, char dir)
 	t_dim	dim;
 
 	pid = fork();
-	sleep(3);
-	printf("[%d]\n", pid);
-	if (pid == 0)
+	sleep(1);
+	if (pid < 0)
+		exit(1);
+	else if (pid == 0)
 	{
-		printf("FILS\n");
+		printf("FILS, [%d]\n", getpid());
 		dim.i = (dir == 'U') ? -1 : 0;
 		if (dir == 'D')
 			dim.i = 1;
 		dim.j = (dir == 'L') ? -1 : 0;
 		if (dir == 'R')
 			dim.j = 1;
-		res = applydir(puzzle, res, dim);
+		applydir(puzzle, res, dim);
 		calcul_value(puzzle, res, value);
-		exit(2);
+	printf("---debug RES---\n");
+	printpuzzle(res);
+	printf("---debug---\n");
+		exit(0);
 	}
 	else
-		printf("PERE\n");
+		printf("PERE, [%d]\n", getpid());
 	return (pid);
+}
+
+void	pickone(t_puzzle *puzzle, int values[4], char moves[4], t_moves *lastmove, char **tabs[4])
+{
+	int	i;
+
+	i = 0;
+	while (i < 4 && moves[i])
+	{
+		printf("-----DBRIEF-----\n");
+		printpuzzle(tabs[i]);
+		printf("--------------\n");
+		printf("value: [%d], move [%c]\n\n", values[i], moves[i]);
+		i++;
+	}
 }
 
 t_puzzle	*npuzzle(t_puzzle *puzzle)
@@ -195,16 +222,18 @@ t_puzzle	*npuzzle(t_puzzle *puzzle)
 		i = 0;
 		while (i < 4 && moves[i])
 		{
-			if (applythread(puzzle, tabs[i], &values[i],  moves[i]) == 0)
-				printf("WTFDUDE\n");
-			printf("i = [%d]\n", i);
+			applythread(puzzle, tabs[i], &values[i],  moves[i]);
+			printf("i = [%d] --- [%d]\n", i, getpid());
 			i++;
 		}
-		printf("YOLO\n");
-		while (i-- > 0)
+		while (i > 0)
+		{
 			wait(0);
-		printf("O_O WOW\n");
+			printf("proc finished...\n");
+			i--;
+		}
+		pickone(puzzle, values, moves, lastmove, tabs);
+		exit(0);
 	}
-	exit(0);
 	return (puzzle);
 }
