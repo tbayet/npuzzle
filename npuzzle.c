@@ -105,9 +105,6 @@ int	algo_nilson(t_puzzle *puzzle, char *solv, char **table)
 	int	len;
 	int	i;
 
-	printf("5---debug---\n");
-	printpuzzle(table);
-	printf("5---debug---\n");
 	len = puzzle->len * puzzle->len;
 	res = (solv[len - 1] != len) ? 1 : 0;
 	i = 0;
@@ -152,41 +149,29 @@ void	calcul_value(t_puzzle *puzzle, char **table, int *value)
 		while (cpt-- > 0 && printf("3[%d][%d]\n", pos.i, pos.j))
 			solv[i++] = table[--pos.i][pos.j];
 	}
-	printf("Go in algo...\n");
 	*value = algo_nilson(puzzle, solv, table);
-	printf("---debug---\n");
-	printpuzzle(table);
-	printf("---debug---\n");
+	printf("TRUEvalue= [%d]\n", *value);
 }
 
-int	applythread(t_puzzle *puzzle, char **res, int *value, char dir)
+void	*applythread(void *args)
 {
-	pid_t	pid;
 	t_dim	dim;
+	t_tdargs	*as;
 
-	pid = fork();
-	sleep(1);
-	if (pid < 0)
-		exit(1);
-	else if (pid == 0)
-	{
-		printf("FILS, [%d]\n", getpid());
-		dim.i = (dir == 'U') ? -1 : 0;
-		if (dir == 'D')
-			dim.i = 1;
-		dim.j = (dir == 'L') ? -1 : 0;
-		if (dir == 'R')
-			dim.j = 1;
-		applydir(puzzle, res, dim);
-		calcul_value(puzzle, res, value);
-	printf("---debug RES---\n");
-	printpuzzle(res);
-	printf("---debug---\n");
-		exit(0);
-	}
-	else
-		printf("PERE, [%d]\n", getpid());
-	return (pid);
+	as = (t_tdargs*)args;
+	printf("OKforked\n");
+	dim.i = (as->move == 'U') ? -1 : 0;
+	if (as->move == 'D')
+		dim.i = 1;
+	dim.j = (as->move == 'L') ? -1 : 0;
+	if (as->move == 'R')
+		dim.j = 1;
+	printf("OK\n");
+	applydir(as->puzzle, as->tab, dim);
+	calcul_value(as->puzzle, as->tab, as->value);
+	printf("THENvalue= [%d]\n", *as->value);
+
+	pthread_exit(NULL);
 }
 
 void	pickone(t_puzzle *puzzle, int values[4], char moves[4], t_moves *lastmove, char **tabs[4])
@@ -204,35 +189,63 @@ void	pickone(t_puzzle *puzzle, int values[4], char moves[4], t_moves *lastmove, 
 	}
 }
 
-t_puzzle	*npuzzle(t_puzzle *puzzle)
-{	
-	char	**tabs[4];
-	char	moves[4];
-	int	values[4];
-	int		i;
-	t_moves	*lastmove;
+t_elems		*create_as(t_elems *el, t_puzzle *puzzle)
+{
+	int	i;
 
-	if (!(init_tabs(tabs, puzzle->len, 1)))
+	i = 0;
+	while (i < 4)
+	{
+		if (!(el->ass[i] = (t_tdargs*)malloc(sizeof(t_tdargs))))
+			return (NULL);
+		el->ass[i]->puzzle = puzzle;
+		i++;
+	}
+	return (el);
+}
+
+t_tdargs	*init_as(t_tdargs *as,  char **tab, char move, int *value)
+{
+	as->tab = tab;
+	as->move = move;
+	as->value = value;
+	return (as);
+}
+
+t_puzzle	*npuzzle(t_puzzle *puzzle)
+{
+	t_tdargs	**as;
+	t_elems		*el;
+	t_moves		*lastmove;
+
+	el = (t_elems*)malloc(sizeof(t_elems));
+	if (!(init_tabs(el->tabs, puzzle->len, 1)))
 		return (NULL);
 	lastmove = puzzle->moves;
+	create_as(el, puzzle);
 	while (!ended(puzzle))
 	{
-		ft_bzero(values, 4);
-		see_valid_moves(puzzle, moves, lastmove);
-		i = 0;
-		while (i < 4 && moves[i])
+		ft_bzero(el->values, 4);
+		see_valid_moves(puzzle, el->moves, lastmove);
+		el->i = 0;
+		while (el->i < 4 && el->moves[el->i])
 		{
-			applythread(puzzle, tabs[i], &values[i],  moves[i]);
-			printf("i = [%d] --- [%d]\n", i, getpid());
-			i++;
+	printf("SWAG\n");
+			init_as(el->ass[el->i], el->tabs[el->i], el->moves[el->i], &el->values[el->i]);
+	printf("SWAG\n");
+			el->ass[el->i]->puzzle = puzzle;
+	printf("--------SWAG\n");
+			pthread_create(&(el->pthread[el->i]), NULL, applythread, el->ass[el->i]);
+	printf("SfdggdfgWAG\n");
+			el->ass[el->i]->puzzle = puzzle;
+			el->i++;
 		}
-		while (i > 0)
+		while (--(el->i) >= 0)
 		{
-			wait(0);
+			pthread_join(el->pthread[el->i], NULL);
 			printf("proc finished...\n");
-			i--;
 		}
-		pickone(puzzle, values, moves, lastmove, tabs);
+		pickone(puzzle, el->values, el->moves, lastmove, el->tabs);
 		exit(0);
 	}
 	return (puzzle);

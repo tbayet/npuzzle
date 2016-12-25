@@ -7,11 +7,12 @@
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <pthread.h>
 
 typedef struct		s_dim
 {
-	char			i;
-	char			j;
+	int			i;
+	int			j;
 }					t_dim;
 
 /*typedef struct		s_choice
@@ -45,7 +46,25 @@ typedef struct		s_puzzle
 	char			*solv;
 	t_dim			*blank;
 	t_moves			*moves;
-}					t_puzzle;
+}			t_puzzle;
+
+typedef struct		s_tdargs
+{
+	t_puzzle	*puzzle;
+	int		*value;
+	char		move;
+	char		**tab;
+}			t_tdargs;
+
+typedef struct		s_elems
+{
+	int		values[4];
+	char		moves[4];
+	char		**tabs[4];
+	pthread_t	pthread[4];
+	t_tdargs	*ass[4];
+	int		i;
+}			t_elems;
 
 typedef struct		s_grid
 {
