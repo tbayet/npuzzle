@@ -8,6 +8,7 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <pthread.h>
+# include <limits.h>
 
 typedef struct		s_dim
 {
@@ -80,5 +81,11 @@ char			ended(t_puzzle *puzzle);
 void			printpuzzle(char **puzzle);
 t_dim				*ft_newdim(char i, char j);
 t_dim				getdims(char **tab, char c);
-
+t_elems				*create_as(t_elems *el, t_puzzle *puzzle);
+t_tdargs			*init_as(t_tdargs *as,  char **tab, char move, int *value);
+void				*applythread(void *args);
+char				**init_tabs(char **tabs[4], int len, char c);
+t_moves				*pickone(t_puzzle *puzzle, int values[4], char moves[4], t_moves *lastmove, char **tabs[4]);
+void				calcul_value(t_puzzle *puzzle, char **table, int *value);
+t_moves				*addmove(t_moves **moves, char dir);
 #endif

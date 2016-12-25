@@ -1,0 +1,2 @@
+il faudra Compter le no;bre degalites et DUP les struct t_puzzle afin de lancer la recursive en thread. Pour la condition d'arret, il faudra diviser la fonction npuzzle pour enlever la boucle while afin de comparer a chaque tour les VALUES et concatener les t_puzzle.
+
