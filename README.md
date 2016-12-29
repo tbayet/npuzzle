@@ -1,4 +1,4 @@
-# Projet Ecole 42 | npuzzle
+# Projet Ecole 42 | npuzzle (en cours...)
   Ce projet consiste à réaliser un solveur de npuzzle, ou nslide (jeu de taquin sur grille de n*n),
   en développant trois algorithmes acceptables de pathfinding basés sur le calcul de la Manhattan distance.
   Parsing + Solver + Affichage
