@@ -36,6 +36,7 @@ static void	see_valid_moves(t_puzzle *puzzle, char moves[4], t_moves *lastmove)
 		moves[index++] = '\0';
 }
 
+#include <stdio.h>
 t_puzzle	*npuzzle(t_puzzle *puzzle)
 {
 	t_tdargs	**as;
@@ -49,7 +50,8 @@ t_puzzle	*npuzzle(t_puzzle *puzzle)
 	create_as(el, puzzle);
 	while (!ended(puzzle))
 	{
-		ft_bzero(el->values, 4);
+		ft_bzero(el->values, 16);
+		printf("-0--[%d][%d][%d][%d]---\n", el->values[0], el->values[1], el->values[2], el->values[3]);
 		see_valid_moves(puzzle, el->moves, lastmove);
 		el->i = 0;
 		while (el->i < 4 && el->moves[el->i])
@@ -62,7 +64,7 @@ t_puzzle	*npuzzle(t_puzzle *puzzle)
 		}
 		while (--(el->i) >= 0)
 			pthread_join(el->pthread[el->i], NULL);
-		lastmove = pickone(puzzle, el->values, el->moves, lastmove, el->tabs);
+		lastmove = pickone(puzzle, el, lastmove);
 		printf("---[%d][%d][%d][%d]---\n", el->values[0], el->values[1], el->values[2], el->values[3]);
 		printpuzzle(puzzle->now);
 		printf("\n");

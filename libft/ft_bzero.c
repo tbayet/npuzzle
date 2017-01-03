@@ -6,7 +6,7 @@
 /*   By: tbayet <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/25 14:19:27 by tbayet            #+#    #+#             */
-/*   Updated: 2016/03/18 15:30:13 by tbayet           ###   ########.fr       */
+/*   Updated: 2017/01/03 13:29:15 by tbayet           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 
 void	ft_bzero(void *s, size_t n)
 {
-	unsigned char	*temp;
+	char	*temp;
 
 	if (s)
 	{
-		temp = (unsigned char*)s;
+		temp = (char*)s;
 		while (n > 0)
 		{
 			temp[n - 1] = 0;

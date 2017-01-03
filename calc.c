@@ -25,7 +25,7 @@ static int	manhattan(t_puzzle *puzzle, char **table)
 	return (res);
 	
 }
-
+#include <stdio.h>
 static int	algo_nilson(t_puzzle *puzzle, char *solv, char **table)
 {
 	int	res;
@@ -39,13 +39,16 @@ static int	algo_nilson(t_puzzle *puzzle, char *solv, char **table)
 	{
 		if (solv[i] != len && solv[i + 1] != len)
 		{
-			if (solv[i] + 1 == solv[i + 1])
+			if (solv[i] + 1 != solv[i + 1])
 				res += 2;
 		}
 		i++;
 	}
+	printf("solv: [%d%d%d%d%d%d%d%d%d] Nilson: [%d]\n",solv[0], solv[1], solv[2], solv[3], solv[4], solv[5], solv[6], solv[7], solv[8], res);
 	res *= 3;
+	printf("Nilson*3: [%d]\n", res);
 	res += manhattan(puzzle, table);
+	printf(" + manhattan: [%d]\n", res);
 	return (res);
 }
 
@@ -61,6 +64,7 @@ void	calcul_value(t_puzzle *puzzle, char **table, int *value)
 	solv = ft_strnew(len * len); // protect
 	pos.i = 0;
 	pos.j = -1;
+	i = 0;
 	while (len > 0)
 	{
 		cpt = len;
@@ -79,7 +83,7 @@ void	calcul_value(t_puzzle *puzzle, char **table, int *value)
 	*value = algo_nilson(puzzle, solv, table);
 }
 
-void	movepuzzle(t_puzzle *puzzle, char dir)
+static void	movepuzzle(t_puzzle *puzzle, char dir)
 {
 	t_dim	dim;
 	t_dim	*b;
@@ -101,7 +105,7 @@ void	movepuzzle(t_puzzle *puzzle, char dir)
 	puzzle->blank->j += dim.j;
 }
 
-t_moves	*pickone(t_puzzle *puzzle, int values[4], char moves[4], t_moves *lastmove, char **tabs[4])
+t_moves	*pickone(t_puzzle *puzzle, t_elems *el, t_moves *lastmove)
 {
 	int	i;
 	int	min;
@@ -109,15 +113,15 @@ t_moves	*pickone(t_puzzle *puzzle, int values[4], char moves[4], t_moves *lastmo
 
 	i = 0;
 	min = INT_MAX;
-	while (i < 4 && moves[i])
+	while (i < 4 && el->moves[i])
 	{
-		if (values[i] < min)
+		if (el->values[i] < min)
 		{
-			min = values[i];
+			min = el->values[i];
 			mini = i;
 		}
 		i++;
 	}
-	movepuzzle(puzzle, moves[mini]);
-	return (addmove(&lastmove, moves[mini]));
+	movepuzzle(puzzle, el->moves[mini]);
+	return (addmove(&lastmove, el->moves[mini]));
 }

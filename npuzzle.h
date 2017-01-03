@@ -85,7 +85,7 @@ t_elems				*create_as(t_elems *el, t_puzzle *puzzle);
 t_tdargs			*init_as(t_tdargs *as,  char **tab, char move, int *value);
 void				*applythread(void *args);
 char				**init_tabs(char **tabs[4], int len, char c);
-t_moves				*pickone(t_puzzle *puzzle, int values[4], char moves[4], t_moves *lastmove, char **tabs[4]);
+t_moves				*pickone(t_puzzle *puzzle, t_elems *el, t_moves *lastmove);
 void				calcul_value(t_puzzle *puzzle, char **table, int *value);
 t_moves				*addmove(t_moves **moves, char dir);
 #endif
