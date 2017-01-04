@@ -36,39 +36,138 @@ static void	see_valid_moves(t_puzzle *puzzle, char moves[4], t_moves *lastmove)
 		moves[index++] = '\0';
 }
 
-#include <stdio.h>
+
+int			get_node_len(t_puzzle *node)
+{
+	int			len;
+	t_puzzle	*tmp;
+
+	tmp = node;
+	len = 0;
+	while (tmp)
+	{
+		len++;
+		tmp = (tmp->next) ? tmp->next : tmp->link;
+	}
+	return (len);
+}
+
+pthread_t	*start_thread(t_puzzle	*puzzle, void (*f))
+{
+	pthread_t *id_thread;
+
+	id_thread = NULL;
+	if (pthread_create(id_thread, NULL, f, puzzle) == 0)
+		return (id_thread);
+	return (NULL);
+}
+
+
+void		close_element(t_puzzle	*node)
+{
+	t_puzzle	*elem;
+	
+	elem = node;
+	if (elem->id_node != 0)
+	{
+		if (elem->parent)
+		{
+			if (elem->next)
+			{
+				//Refaire le lien Parent->fils
+				elem->parent->nextNode = elem->next;
+				elem->next->parent = elem->parent;
+				//refaire le lien freres
+				elem->next->prev = elem->prev;
+				if (elem->prev)
+					elem->prev->link = elem->next;
+			}
+			else
+			{
+				if (elem->link)
+					elem->link->prev = elem->prev;
+				if (elem->prev)
+					elem->prev->link = elem->link;
+				close_element(elem->parent);
+			}
+		}
+		else
+		{
+			if (elem->prev)
+			{
+				if (elem->next)
+					elem->prev = elem->next;
+				else
+					elem->prev = elem->link;
+			}
+			if (elem->next)
+				elem->next->prev = elem->prev;
+			else if (elem->link)
+				elem->link->prev = elem->prev;
+		}
+	}
+	tpuzzle_del(&elem);
+}
+
+t_puzzle	*find_and_close(t_puzzle *puzzle, t_puzzle *node)
+{
+	t_puzzle	*tmp;
+	t_puzzle	*next;
+	int			id_node;
+	int			min;
+
+	id_node = node->id_node;
+	min = node->score;
+	tmp = (node->next) ? node->next : node->link;
+	while (tmp)
+	{
+		if (tmp->score < min)
+			min = tmp->score;
+		tmp = (tmp->next) ? tmp->next : tmp->link;
+	}
+	tmp = node;
+	while (tmp)
+	{
+		next = (tmp->next) ? tmp->next : tmp->link;
+		if (tmp->score > min)
+			close_element(tmp);
+		tmp = next;
+	}
+	tmp = puzzle;
+	while (tmp->id_node != id_node)
+		tmp = tmp->nextNode;
+	return (tmp);
+}
+
 t_puzzle	*npuzzle(t_puzzle *puzzle)
 {
-	t_tdargs	**as;
-	t_elems		*el;
-	t_moves		*lastmove;
+	t_puzzle	*tmp;
+	t_puzzle	*first;
+	pthread_t	**threads;
+	int			len;
+	int			i;
 
-	el = (t_elems*)malloc(sizeof(t_elems));
-	if (!(init_tabs(el->tabs, puzzle->len, 1)))
-		return (NULL);
-	lastmove = puzzle->moves;
-	create_as(el, puzzle);
-	while (!ended(puzzle))
+	first = puzzle;
+	while (first)
 	{
-		ft_bzero(el->values, 16);
-		printf("-0--[%d][%d][%d][%d]---\n", el->values[0], el->values[1], el->values[2], el->values[3]);
-		see_valid_moves(puzzle, el->moves, lastmove);
-		el->i = 0;
-		while (el->i < 4 && el->moves[el->i])
+		tmp = first;
+		len = get_node_len(first);
+		if (!(threads = (pthread_t**)malloc(sizeof(pthread_t*) * len)))
+			return (NULL);
+		i = 0;
+		while (i < len)
 		{
-			init_as(el->ass[el->i], el->tabs[el->i], el->moves[el->i], &el->values[el->i]);
-			el->ass[el->i]->puzzle = puzzle;
-			pthread_create(&(el->pthread[el->i]), NULL, applythread, el->ass[el->i]);
-			el->ass[el->i]->puzzle = puzzle;
-			el->i++;
+			threads[i++] = start_thread(tmp, create_sons);//pointeur fonction
+			tmp = (tmp->next) ? tmp->next : tmp->link;
 		}
-		while (--(el->i) >= 0)
-			pthread_join(el->pthread[el->i], NULL);
-		lastmove = pickone(puzzle, el, lastmove);
-		printf("---[%d][%d][%d][%d]---\n", el->values[0], el->values[1], el->values[2], el->values[3]);
-		printpuzzle(puzzle->now);
-		printf("\n");
-		sleep(1);
+		while (--i >= 0)
+		{
+			if (threads[i])
+				pthread_join(*(threads[i]), NULL);
+		}
+		free(threads);
+		first = find_and_close(puzzle,first->nextNode);
+		first = first->nextNode;
 	}
 	return (puzzle);
 }

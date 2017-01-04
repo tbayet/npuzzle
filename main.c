@@ -36,13 +36,7 @@ int	main(int argc, char **argv)
 		{
 			printpuzzle(puzzle->now);
 			ft_putstr("\n");
-			ft_putstr(puzzle->solv);
-			ft_putstr("\n");
-			printpuzzle(puzzle->end);
-			ft_putstr("\n------------\n");
 			npuzzle(puzzle);
-			ft_putstr("\n------------\n");
-			printpuzzle(puzzle->now);
 		}
 	}
 	else

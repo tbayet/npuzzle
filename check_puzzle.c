@@ -31,31 +31,33 @@ int	check_parsing(char **puzzle)
 	return (1);
 }
 
-static	t_puzzle *transform_puzzle(t_puzzle *npuz, char **puzzle)
+static	char *transform_puzzle(t_puzzle *npuz, char **puzzle)
 {
 	int	i;
 	int	j;
 	int	k;
+	char	*solv;
+	char	**end;
 
 	npuz->len = ft_nbwords(*puzzle);
 	if (!(npuz->now = (char**)malloc(sizeof(char*) * (npuz->len + 1))))
 		return (NULL);
-	if (!(npuz->end = (char**)malloc(sizeof(char*) * (npuz->len + 1))))
+	if (!(end = (char**)malloc(sizeof(char*) * (npuz->len + 1))))
 	{
 		free(npuz->now);
 		return (NULL);
 	}
-	if (!(npuz->solv = ft_strnew(npuz->len * npuz->len)))
+	if (!(solv = ft_strnew(npuz->len * npuz->len)))
 	{
 		free(npuz->now);
-		free(npuz->end);
+		free(end);
 		return (NULL);
 	}
 	i = 0;
 	while (i <= npuz->len)
 	{
 		npuz->now[i] = NULL;
-		npuz->end[i++] = NULL;
+		end[i++] = NULL;
 	}
 	i = 0;
 	while (i < npuz->len)
@@ -63,7 +65,7 @@ static	t_puzzle *transform_puzzle(t_puzzle *npuz, char **puzzle)
 		if (!(npuz->now[i] = ft_strnew(npuz->len)))
 		{
 			ft_deltab(npuz->now);
-			ft_deltab(npuz->end);
+			ft_deltab(end);
 			return (NULL);
 		}
 		j = 0;
@@ -84,20 +86,21 @@ static	t_puzzle *transform_puzzle(t_puzzle *npuz, char **puzzle)
 		}
 		free(puzzle[i]);
 		puzzle[i] = NULL;
-		if (!(npuz->end[i] = ft_strdup(npuz->now[i])))
+		if (!(end[i] = ft_strdup(npuz->now[i])))
 		{
-			ft_deltab(npuz->end);
+			ft_deltab(end);
 			ft_deltab(npuz->now);
 			return (NULL);
 		}
 		i++;
 	}
+	set_end(end);
 	free(puzzle);
 	puzzle = NULL;
-	return (npuz);
+	return (solv);
 }
 
-t_puzzle	*fill_solv(t_puzzle *puzzle)
+t_puzzle	*fill_solv(t_puzzle *puzzle, char *solv, char **end)
 {
 	int		index;
 	char	i;
@@ -108,31 +111,31 @@ t_puzzle	*fill_solv(t_puzzle *puzzle)
 	j = 0;
 	while (index < (puzzle->len * puzzle->len))
 	{
-		while (puzzle->end[i][j])
+		while (end[i][j])
 		{
-			puzzle->solv[index++] = puzzle->end[i][j];
-			puzzle->end[i][j++] = '\0';
+			solv[index++] = end[i][j];
+			end[i][j++] = '\0';
 		}
 		j--;
 		i++;
-		while (i < puzzle->len && puzzle->end[i][j])
+		while (i < puzzle->len && end[i][j])
 		{
-			puzzle->solv[index++] = puzzle->end[i][j];
-			puzzle->end[i++][j] = '\0';
+			solv[index++] = end[i][j];
+			end[i++][j] = '\0';
 		}
 		i--;
 		j--;
-		while (j >= 0 && puzzle->end[i][j])
+		while (j >= 0 && end[i][j])
 		{
-			puzzle->solv[index++] = puzzle->end[i][j];
-			puzzle->end[i][j--] = '\0';
+			solv[index++] = end[i][j];
+			end[i][j--] = '\0';
 		}
 		j++;
 		i--;
-		while (i >= 0 && puzzle->end[i][j])
+		while (i >= 0 && end[i][j])
 		{
-			puzzle->solv[index++] = puzzle->end[i][j];
-			puzzle->end[i--][j] = '\0';
+			solv[index++] = end[i][j];
+			end[i--][j] = '\0';
 		}
 		i++;
 		j++;
@@ -140,23 +143,23 @@ t_puzzle	*fill_solv(t_puzzle *puzzle)
 	return (puzzle);
 }
 
-int	is_solvable(t_puzzle *puzzle)
+int	is_solvable(t_puzzle *puzzle, char *solv, char **end)
 {
 	int	nb_invert;
 	int	i;
 	int	j;
 
-	puzzle = fill_solv(puzzle);
+	puzzle = fill_solv(puzzle, solv, end);
 	i = 0;
 	nb_invert = 0;
-	while (puzzle->solv[i])
+	while (solv[i])
 	{
-		if (puzzle->solv[i] != (puzzle->len * puzzle->len))
+		if (solv[i] != (puzzle->len * puzzle->len))
 		{
 			j = i + 1;
-			while (puzzle->solv[j])
+			while (solv[j])
 			{
-				if (puzzle->solv[i] > puzzle->solv[j])
+				if (solv[i] > solv[j])
 					nb_invert++;
 				j++;
 			}
@@ -171,7 +174,7 @@ int	is_solvable(t_puzzle *puzzle)
 	else
 	{
 		i = 0;
-		while (puzzle->solv[i] != (puzzle->len * puzzle->len))
+		while (solv[i] != (puzzle->len * puzzle->len))
 			i++;
 		if ((i / puzzle->len) % 2 == 0)
 		{
@@ -187,7 +190,7 @@ int	is_solvable(t_puzzle *puzzle)
 	return (0);
 }
 
-static t_puzzle	*get_solved(t_puzzle *puzzle)
+static t_puzzle	*get_solved(t_puzzle *puzzle, char **end)
 {
 	int	i;
 	int	j;
@@ -198,25 +201,25 @@ static t_puzzle	*get_solved(t_puzzle *puzzle)
 	value = 1;
 	while (value <= puzzle->len * puzzle->len)
 	{
-		while (j < puzzle->len && !(puzzle->end[i][j]))
-			puzzle->end[i][j++] = value++;
+		while (j < puzzle->len && !(end[i][j]))
+			end[i][j++] = value++;
 		j--;
 		i++;
-		while (i < puzzle->len && !(puzzle->end[i][j]))
+		while (i < puzzle->len && !(end[i][j]))
 		{
-			puzzle->end[i++][j] = value++;
+			end[i++][j] = value++;
 		}
 		i--;
 		j--;
-		while (j >= 0 && (!puzzle->end[i][j]))
+		while (j >= 0 && (!end[i][j]))
 		{
-			puzzle->end[i][j--] = value++;
+			end[i][j--] = value++;
 		}
 		j++;
 		i--;
-		while (i >= 0 && !(puzzle->end[i][j]))
+		while (i >= 0 && !(end[i][j]))
 		{
-			puzzle->end[i--][j] = value++;
+			end[i--][j] = value++;
 		}
 		i++;
 		j++;
@@ -226,24 +229,26 @@ static t_puzzle	*get_solved(t_puzzle *puzzle)
 
 t_puzzle	*check_puzzle(t_puzzle *npuz, char **puzzle)
 {
+	char	*solv;
+
 	if (!(check_parsing(puzzle)))
 	{
 		ft_putendl_fd("npuzzle: Error in file format", 2);
 		ft_deltab(puzzle);
 		return (NULL);
 	}
-	if (!(npuz = transform_puzzle(npuz, puzzle)))
+	if (!(solv = transform_puzzle(npuz, puzzle)))
 	{
 		ft_putendl_fd("npuzzle: Error in memory alllocation", 2);
 		ft_deltab(puzzle);
 		return (NULL);
 	}
-	if (!(is_solvable(npuz)))
+	if (!(is_solvable(npuz, solv, get_end())))
 	{
 		ft_putendl_fd("npuzzle: Impossible to solve this puzzle", 2);
 		return (NULL);
 	}
-	npuz = get_solved(npuz);
-	npuz->moves = NULL;
+	npuz = get_solved(npuz, get_end());
+	npuz->id_node = 0;
 	return (npuz);
 }

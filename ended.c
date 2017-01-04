@@ -1,21 +1,38 @@
 #include "npuzzle.h"
 
-char	ended(t_puzzle *puzzle)
+static char	**finalstate = NULL;
+
+void	set_end(char **end)
+{
+	if (finalstate)
+		ft_deltab(finalstate);
+	finalstate = end;
+}
+
+char	**get_end(void)
+{
+	return (finalstate);
+}
+
+char		ended(t_puzzle *puzzle)
 {
 	char	i;
 	char	j;
 
-	i = 0;
-	while (puzzle->now[i])
+	if (finalstate)
 	{
-		j = 0;
-		while (puzzle->now[i][j])
+		i = 0;
+		while (puzzle->now[i])
 		{
-			if (puzzle->now[i][j] != puzzle->end[i][j])
-				return (0);
-			j++;
+			j = 0;
+			while (puzzle->now[i][j])
+			{
+				if (puzzle->now[i][j] != finalstate[i][j])
+					return (0);
+				j++;
+			}
+			i++;
 		}
-		i++;
 	}
-	return (1);
+	return ((finalstate) ? 1 : 0);
 }
