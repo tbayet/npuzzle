@@ -57,7 +57,7 @@ pthread_t	*start_thread(t_puzzle	*puzzle, void (*f))
 	pthread_t *id_thread;
 
 	id_thread = NULL;
-	if (pthread_create(id_thread, NULL, f, puzzle) == 0)
+	if (pthread_create(id_thread, NULL, f, puzzle) != 0)
 		return (id_thread);
 	return (NULL);
 }
@@ -67,6 +67,7 @@ void		close_element(t_puzzle	*node)
 {
 	t_puzzle	*elem;
 	
+	printf("CLOSING ONE in %d...\n", node->id_node);
 	elem = node;
 	if (elem->id_node != 0)
 	{
@@ -96,9 +97,12 @@ void		close_element(t_puzzle	*node)
 			if (elem->prev)
 			{
 				if (elem->next)
-					elem->prev = elem->next;
+					elem->prev->next = elem->next;
 				else
-					elem->prev = elem->link;
+				{
+					elem->prev->next = NULL;
+					elem->prev->link = elem->link;
+				}
 			}
 			if (elem->next)
 				elem->next->prev = elem->prev;
@@ -106,7 +110,7 @@ void		close_element(t_puzzle	*node)
 				elem->link->prev = elem->prev;
 		}
 	}
-	tpuzzle_del(&elem);
+//	tpuzzle_del(&elem);
 }
 
 t_puzzle	*find_and_close(t_puzzle *puzzle, t_puzzle *node)
@@ -135,39 +139,103 @@ t_puzzle	*find_and_close(t_puzzle *puzzle, t_puzzle *node)
 	}
 	tmp = puzzle;
 	while (tmp->id_node != id_node)
+	{
+		printf("SEG - id_node[%d / %d]\n", tmp->id_node, id_node);
 		tmp = tmp->nextNode;
+	}
 	return (tmp);
+}
+
+void		makelinks(t_puzzle *first)
+{
+	t_puzzle	*tmp;
+	t_puzzle	*son1;
+	t_puzzle	*son2;
+	
+
+	tmp = first;
+	while (tmp->next || tmp->link)
+	{
+		son1 = tmp->nextNode;
+		while (son1->next)
+			son1 = son1->next;
+		son2 = (tmp->next) ? tmp->next->nextNode : tmp->link->nextNode;
+		son1->link = son2;
+		son2->prev = son1;
+		tmp = (tmp->next) ? tmp->next : tmp->link;
+	}
+}
+
+void	printnode(t_puzzle *node)
+{
+	t_puzzle	*tmp;
+
+	tmp = node;
+	while (tmp)
+	{
+		printf("\nNODE ---%d---\n", tmp->id_node);
+		printpuzzle(tmp->now);
+		if (tmp->next)
+			printf("<-NEXT->\n");
+		else if (tmp->link)
+			printf("<-LINK->\n");
+		tmp = (tmp->next) ? tmp->next : tmp->link;
+	}
+}
+
+void	printall(t_puzzle *puzzle)
+{
+	t_puzzle	*node;
+
+	node = puzzle;
+	printf("############## ALL ###################\n");
+	while (node)
+	{
+	printf("########\n");
+		printnode(node);
+	printf("########\n");
+		node = node->nextNode;
+	}
+	printf("############## ENDALL ###################\n");
 }
 
 t_puzzle	*npuzzle(t_puzzle *puzzle)
 {
 	t_puzzle	*tmp;
 	t_puzzle	*first;
-	pthread_t	**threads;
+	pthread_t	*threads;
 	int			len;
 	int			i;
 
 	first = puzzle;
-	while (first)
+	while (first->score)
 	{
 		tmp = first;
+		printnode(first);
 		len = get_node_len(first);
-		if (!(threads = (pthread_t**)malloc(sizeof(pthread_t*) * len)))
+		if (!(threads = (pthread_t*)malloc(sizeof(pthread_t) * len)))
 			return (NULL);
 		i = 0;
 		while (i < len)
 		{
-			threads[i++] = start_thread(tmp, create_sons);//pointeur fonction
+			pthread_create(&threads[i++], NULL, create_sons, tmp);
+		//	threads[i++] = start_thread(tmp, create_sons);//pointeur fonction
 			tmp = (tmp->next) ? tmp->next : tmp->link;
 		}
 		while (--i >= 0)
 		{
-			if (threads[i])
-				pthread_join(*(threads[i]), NULL);
+			pthread_join(threads[i], NULL);
 		}
 		free(threads);
-		first = find_and_close(puzzle,first->nextNode);
-		first = first->nextNode;
+		sleep(1);
+		//printf("len:[%d] \n", len, 
+		makelinks(first);
+		printf("=================beforeclose\n");
+		printnode(first->nextNode);
+		printf("=================before//===\n");
+		first = find_and_close(puzzle, first->nextNode);
+		printall(puzzle);
+		//first = first->nextNode;
 	}
 	return (puzzle);
 }

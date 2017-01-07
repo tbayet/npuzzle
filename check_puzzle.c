@@ -250,5 +250,11 @@ t_puzzle	*check_puzzle(t_puzzle *npuz, char **puzzle)
 	}
 	npuz = get_solved(npuz, get_end());
 	npuz->id_node = 0;
+	npuz->score = -1;
+	npuz->parent = NULL;
+	npuz->next = NULL;
+	npuz->link = NULL;
+	npuz->prev = NULL;
+	npuz->lastmove = '\0';
 	return (npuz);
 }

@@ -20,7 +20,7 @@ char	**init_tabs(char **tabs[4], int len, char c)
 
 static char	**applydir(t_puzzle *puzzle, char **res, t_dim dim)
 {
-	int	i;
+	int		i;
 	char	c;
 	t_dim	*b;
 

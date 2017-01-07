@@ -5,9 +5,11 @@ static int	manhattan(t_puzzle *puzzle, char **table)
 	int	res;
 	t_dim	dim;
 	t_dim	goal;
+	char	**end;
 
 	dim.i = 0;
 	res = 0;
+	end = get_end();
 	while (dim.i < puzzle->len)
 	{
 		dim.j = 0;
@@ -15,7 +17,7 @@ static int	manhattan(t_puzzle *puzzle, char **table)
 		{
 			if (table[dim.i][dim.j] != puzzle->len * puzzle->len)
 			{
-				goal = getdims(puzzle->end, table[dim.i][dim.j]);
+				goal = getdims(end, table[dim.i][dim.j]);
 				res += ft_absolute(dim.i - goal.i) + ft_absolute(dim.j - goal.j);
 			}
 			dim.j++;
@@ -25,7 +27,7 @@ static int	manhattan(t_puzzle *puzzle, char **table)
 	return (res);
 	
 }
-#include <stdio.h>
+
 static int	algo_nilson(t_puzzle *puzzle, char *solv, char **table)
 {
 	int	res;
@@ -37,11 +39,31 @@ static int	algo_nilson(t_puzzle *puzzle, char *solv, char **table)
 	i = 0;
 	while (i < len && i + 1 < len)
 	{
-		if (solv[i] != len && solv[i + 1] != len)
+		if (i == len - 2)
+		{
+			if (solv[i] != len)
+			{
+				if (solv[i] + 1 != solv[0])
+					res += 2;
+			}
+		}
+		else if (i == len - 3 && solv[i + 1] == len)
+		{
+			if (solv[i] + 1 != solv[0])
+				res += 2;
+		}
+		else if (solv[i + 1] == len && (i + 2) < len)
+		{
+			if (solv[i] + 1 != solv[i + 2])
+				res += 2;
+		}
+		else if (solv[i] != len)
 		{
 			if (solv[i] + 1 != solv[i + 1])
 				res += 2;
-		}
+		}/*
+		else if (solv[i + 1] == len)
+				res += 2;*/
 		i++;
 	}
 	printf("solv: [%d%d%d%d%d%d%d%d%d] Nilson: [%d]\n",solv[0], solv[1], solv[2], solv[3], solv[4], solv[5], solv[6], solv[7], solv[8], res);
@@ -105,7 +127,53 @@ static void	movepuzzle(t_puzzle *puzzle, char dir)
 	puzzle->blank->j += dim.j;
 }
 
-t_moves	*pickone(t_puzzle *puzzle, t_elems *el, t_moves *lastmove)
+t_puzzle	*new_son(char **tab, t_puzzle *daddy, char move, int value)
+{
+	t_dim		dim;
+	t_puzzle	*son;
+
+	if (!(son = (t_puzzle*)malloc(sizeof(t_puzzle))))
+		return (NULL);
+	son->now = tab;
+	dim.i = (move == 'U') ? -1 : 0;
+	if (move == 'D')
+		dim.i = 1;
+	dim.j = (move == 'L') ? -1 : 0;
+	if (move == 'R')
+		dim.j = 1;
+	son->blank = ft_newdim(daddy->blank->i + dim.i, daddy->blank->j + dim.j);
+	son->score = value;
+	son->len = daddy->len;
+	son->id_node = daddy->id_node + 1;
+	son->lastmove = move;
+	son->parent = (daddy->nextNode) ? NULL : daddy;
+	son->nextNode = NULL;
+	son->next = NULL;
+	son->link = NULL;
+	return (son);
+}
+
+t_puzzle	*add_son(t_puzzle *daddy, char **tab, char move, int value)
+{
+	t_puzzle	*tmp;
+	t_dim		dim;
+
+	if (!daddy->nextNode)
+	{
+		daddy->nextNode = new_son(tab, daddy, move, value);
+		daddy->nextNode->prev = NULL;
+	}
+	else
+	{
+		tmp = daddy->nextNode;
+		while (tmp->next)
+			tmp = tmp->next;
+		tmp->next = new_son(tab, daddy, move, value);
+		tmp->next->prev = tmp;
+	}
+	return (daddy);
+}
+void	pickone(t_puzzle *puzzle, t_elems *el)
 {
 	int	i;
 	int	min;
@@ -122,6 +190,11 @@ t_moves	*pickone(t_puzzle *puzzle, t_elems *el, t_moves *lastmove)
 		}
 		i++;
 	}
-	movepuzzle(puzzle, el->moves[mini]);
-	return (addmove(&lastmove, el->moves[mini]));
+	i = 0;
+	while (i < 4 && el->moves[i])
+	{
+		if (el->values[i] == min)
+			add_son(puzzle, el->tabs[i], el->moves[i], el->values[i]);
+		i++;
+	}
 }
