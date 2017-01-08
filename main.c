@@ -1,7 +1,50 @@
 #include "npuzzle.h"
 
+t_puzzle		*tpuzzle_del(t_puzzle **puzzle)
+{
+	if (*puzzle)
+	{
+		ft_deltab((*puzzle)->now);
+		if ((*puzzle)->blank)
+			free((*puzzle)->blank);
+		free(*puzzle);
+		*puzzle = NULL;
+	}
+	return (NULL);
+}
 
-void	printpuzzle(char **puzzle)
+static t_puzzle	*tpuzzle_delnode(t_puzzle **node)
+{
+	t_puzzle	*tmp;
+	t_puzzle	*next;
+
+	tmp = *node;
+	while (tmp)
+	{
+		next = (tmp->next) ? tmp->next : tmp->link;
+		tpuzzle_del(&tmp);
+		tmp = next;
+	}
+	*node = NULL;
+	return (NULL);
+}
+
+t_puzzle		*tpuzzle_delall(t_puzzle **first)
+{
+	t_puzzle	*tmp;
+	t_puzzle	*next;
+
+	tmp = *first;
+	while (tmp)
+	{
+		next = tmp->nextNode;
+		tpuzzle_delnode(&tmp);
+		tmp = next;
+	}
+	*first = NULL;
+	return (NULL);
+}
+void		printpuzzle(char **puzzle)
 {
 	int	i;
 	int	j;
@@ -37,6 +80,7 @@ int	main(int argc, char **argv)
 			printpuzzle(puzzle->now);
 			ft_putstr("\n");
 			npuzzle(puzzle);
+			tpuzzle_delall(&puzzle);
 		}
 	}
 	else

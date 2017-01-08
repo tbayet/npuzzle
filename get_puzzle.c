@@ -43,12 +43,12 @@ static t_grid	*add_grid(t_grid **grid, char *line)
 
 static char	**readfile(int fd)
 {
-	char	**now;
 	t_grid	*grid;
-	char	*line;
-	int		gnl;
 	t_grid	*tmp;
+	char	**now;
+	char	*line;
 	int		len;
+	int		gnl;
 
 	gnl = 1;
 	grid = NULL;

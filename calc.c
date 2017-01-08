@@ -66,20 +66,17 @@ static int	algo_nilson(t_puzzle *puzzle, char *solv, char **table)
 				res += 2;*/
 		i++;
 	}
-	printf("solv: [%d%d%d%d%d%d%d%d%d] Nilson: [%d]\n",solv[0], solv[1], solv[2], solv[3], solv[4], solv[5], solv[6], solv[7], solv[8], res);
 	res *= 3;
-	printf("Nilson*3: [%d]\n", res);
 	res += manhattan(puzzle, table);
-	printf(" + manhattan: [%d]\n", res);
 	return (res);
 }
 
 void	calcul_value(t_puzzle *puzzle, char **table, int *value)
 {
-	int	len;
-	int	i;
+	int		len;
+	int		i;
+	int		cpt;
 	t_dim	pos;
-	int	cpt;
 	char	*solv;
 
 	len = puzzle->len;
@@ -105,7 +102,7 @@ void	calcul_value(t_puzzle *puzzle, char **table, int *value)
 	*value = algo_nilson(puzzle, solv, table);
 }
 
-static void	movepuzzle(t_puzzle *puzzle, char dir)
+static void		movepuzzle(t_puzzle *puzzle, char dir)
 {
 	t_dim	dim;
 	t_dim	*b;
@@ -127,7 +124,7 @@ static void	movepuzzle(t_puzzle *puzzle, char dir)
 	puzzle->blank->j += dim.j;
 }
 
-t_puzzle	*new_son(char **tab, t_puzzle *daddy, char move, int value)
+static t_puzzle	*new_son(char **tab, t_puzzle *daddy, char move, int value)
 {
 	t_dim		dim;
 	t_puzzle	*son;
@@ -153,7 +150,7 @@ t_puzzle	*new_son(char **tab, t_puzzle *daddy, char move, int value)
 	return (son);
 }
 
-t_puzzle	*add_son(t_puzzle *daddy, char **tab, char move, int value)
+t_puzzle		*add_son(t_puzzle *daddy, char **tab, char move, int value)
 {
 	t_puzzle	*tmp;
 	t_dim		dim;

@@ -29,7 +29,7 @@ void	*create_sons(void *voidpuz)
 	puzzle = (t_puzzle*)voidpuz;
 	el = (t_elems*)malloc(sizeof(t_elems));
 	if (!(init_tabs(el->tabs, puzzle->len, 1)))
-		{printf("RUFKKK\n"); exit(1);}//return (NULL);}
+		return (NULL);
 	create_as(el, puzzle);
 	ft_bzero(el->values, 4);
 	see_valid_moves(puzzle, el->moves);
@@ -38,7 +38,8 @@ void	*create_sons(void *voidpuz)
 	{
 		init_as(el->ass[el->i], el->tabs[el->i], el->moves[el->i], &el->values[el->i]);
 		el->ass[el->i]->puzzle = puzzle;
-		pthread_create(&(el->pthread[el->i]), NULL, applythread, el->ass[el->i]);
+		if (pthread_create(&(el->pthread[el->i]), NULL, applythread, el->ass[el->i]))
+			applythread(el->ass[el->i]);
 		el->ass[el->i]->puzzle = puzzle;
 		el->i++;
 	}
@@ -46,5 +47,5 @@ void	*create_sons(void *voidpuz)
 		pthread_join(el->pthread[el->i], NULL);
 	pickone(puzzle, el);
 	pthread_exit(NULL);
-//	exit(1);//return (puzzle);
+	return (puzzle);
 }

@@ -105,6 +105,10 @@ void				*applythread(void *args);
 char				**init_tabs(char **tabs[4], int len, char c);
 void				pickone(t_puzzle *puzzle, t_elems *el);
 void				calcul_value(t_puzzle *puzzle, char **table, int *value);
+t_puzzle			*find_and_close(t_puzzle *puzzle, t_puzzle *node);
+void				makelinks(t_puzzle *first);
 void				*create_sons(void *voidpuz);
 //t_moves				*addmove(t_moves **moves, char dir);
+t_puzzle			*tpuzzle_del(t_puzzle **puzzle);
+t_puzzle			*tpuzzle_delall(t_puzzle **first);
 #endif

@@ -17,9 +17,9 @@ int	check_parsing(char **puzzle)
 		j = 0;
 		while ((*ptr)[j])
 		{
-			while ((*ptr)[j] && ((*ptr)[j] == ' ' || (*ptr)[j] == '	'))
+			while ((*ptr)[j] && ((*ptr)[j] == ' ' || (*ptr)[j] == '\t'))
 				j++;
-			while ((*ptr)[j] && (*ptr)[j] != ' ' && (*ptr)[j] != '	')
+			while ((*ptr)[j] && (*ptr)[j] != ' ' && (*ptr)[j] != '\t')
 			{
 				if (!ft_isdigit((*ptr)[j]))
 					return (0);
@@ -33,9 +33,9 @@ int	check_parsing(char **puzzle)
 
 static	char *transform_puzzle(t_puzzle *npuz, char **puzzle)
 {
-	int	i;
-	int	j;
-	int	k;
+	int		i;
+	int		j;
+	int		k;
 	char	*solv;
 	char	**end;
 
